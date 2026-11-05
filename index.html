@@ -124,9 +124,15 @@ const sections=[
   {data:STORIES, pre:'media/', tabs:'tabs', list:'list', count:'count', active:'all', query:'', view:[]},
   {data:(typeof STUDENT!=='undefined'?STUDENT:null), pre:'media/manami/', tabs:'tabs2', list:'list2', count:'count2', active:'all', query:'', view:[]}
 ];
-sections.forEach(S=>{
-  S.groups=S.data?S.data.groups.map(g=>({name:g.name,text:g.text,items:(g.items||[]).map(v=>toItem(v,S.pre))})):[];
-});
+/* まなみさんの画像フォルダ：置き場所が media/manami でも、トップの manami / manami 2 でも自動で見つけます */
+const MANAMI_A=new Set([5077, 5078, 5079, 5080, 5081, 5082, 5083, 5084, 5085, 5086, 5087, 5088, 5089, 5090, 5091, 5092, 5093, 5094, 5095, 5096, 5097, 5099, 5100, 5101, 5102, 5103, 5104, 5105, 5106, 5107, 5108, 5109, 5110, 5111, 5117, 5119, 5120, 5122, 5123, 5124, 5125, 5126, 5127, 5128, 5129, 5130, 5131, 5132, 5133, 5144, 5145]);
+function probe(src){return new Promise(r=>{const i=new Image();let d=false;const f=v=>{if(!d){d=true;r(v);}};i.onload=()=>f(true);i.onerror=()=>f(false);i.src=src;setTimeout(()=>f(false),8000);});}
+async function pickFolder(n){for(const f of ['media/manami/','manami/','manami%202/','manami2/']){if(await probe(f+n+'.jpg'))return f;}return 'media/manami/';}
+function buildGroups(S,folderOf){
+  S.groups=S.data?S.data.groups.map(g=>({name:g.name,text:g.text,items:(g.items||[]).map(v=>toItem(v,folderOf?folderOf(v):S.pre))})):[];
+}
+buildGroups(sections[0]);
+sections[1].groups=[];
 if(!sections[1].data){document.getElementById('sec2').style.display='none';}
 
 function renderTabs(S){
@@ -186,7 +192,15 @@ document.addEventListener('keydown',ev=>{
 });
 ['tabs','tabs2'].forEach((id,i)=>document.getElementById(id).addEventListener('click',ev=>{const b=ev.target.closest('.tab');if(!b)return;sections[i].active=b.dataset.g;render(i);}));
 document.getElementById('searchInput').addEventListener('input',ev=>{sections[0].query=ev.target.value;renderList(sections[0],0);});
-render(0);render(1);
+render(0);
+(async()=>{
+  if(!sections[1].data)return;
+  const bFirst=sections[1].data.groups.flatMap(g=>g.items).find(v=>!MANAMI_A.has(v));
+  const aFirst=[...MANAMI_A][0];
+  const fA=await pickFolder(aFirst), fB=(bFirst===undefined)?fA:await pickFolder(bFirst);
+  buildGroups(sections[1],v=>MANAMI_A.has(v)?fA:fB);
+  render(1);
+})();
 </script>
 </body>
 </html>
