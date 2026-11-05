@@ -75,6 +75,7 @@ h1 .accent{color:var(--rose);}
   <div class="sec2" id="sec2">
     <p class="kicker">STUDENT STORIES</p>
     <h2><span class="accent">受講生 まなみさん</span>のストーリー</h2>
+    <p class="g-text sec-intro" id="intro2" style="margin:20px 0 32px"></p>
     <div class="controls"><div class="tabs" id="tabs2"></div></div>
     <p class="count" id="count2"></p>
     <div id="list2"></div>
@@ -131,6 +132,7 @@ async function pickFolder(n){for(const f of ['media/manami/','manami/','manami%2
 function buildGroups(S,folderOf){
   S.groups=S.data?S.data.groups.map(g=>({name:g.name,text:g.text,items:(g.items||[]).map(v=>toItem(v,folderOf?folderOf(v):S.pre))})):[];
 }
+(function(){const el=document.getElementById('intro2');if(el){const t=(typeof STUDENT!=='undefined'&&STUDENT.intro)||'';el.textContent=t;el.style.display=t?'':'none';}})();
 buildGroups(sections[0]);
 sections[1].groups=[];
 if(!sections[1].data){document.getElementById('sec2').style.display='none';}
