@@ -56,6 +56,14 @@ h1 .accent{color:var(--rose);}
 .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px 20px 80px;}
 .reader-body .rtext{max-width:760px;margin:0 auto;font-size:17px;line-height:2;white-space:pre-wrap;color:var(--ink);}
 @media (max-width:600px){.reader-body{padding:22px 18px 80px;}.reader-body .rtext{font-size:16px;}}
+.fmt-box .sp{height:1em;}
+.g-text.scroll{white-space:normal;}
+.g-text.scroll .li,.rtext .li{margin:6px 0;}
+.li .li-t{display:block;font-weight:700;color:var(--rose-deep);}
+.li .li-b{display:block;padding-left:1em;}
+.li1{padding-left:1em;text-indent:-1em;margin:3px 0;}
+.rtext{white-space:normal !important;}
+.rtext .sp,.g-text.scroll .sp{height:.9em;}
 .g-hint{font-size:12.5px;color:var(--ink-soft);margin:18px 0 8px;letter-spacing:.04em;}
 
 
@@ -121,6 +129,16 @@ function toItem(v,pre){
 }
 const gradients=["linear-gradient(160deg,#BFE3EF,#7FB8CE)","linear-gradient(165deg,#E3F1F6,#B9D9E4)","linear-gradient(180deg,#16303F,#0B1A22)","linear-gradient(180deg,#123249,#0C4258)","linear-gradient(160deg,#D6E9F2,#A9CEDE)","linear-gradient(160deg,#CFE8E4,#9BC9C2)"];
 function gradientFor(t){t=t||'未分類';let h=0;for(let i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))%gradients.length;}return gradients[Math.abs(h)];}
+function fmtText(t){
+  return String(t).split('\n').map(function(line){
+    if(!line.trim())return '<div class="sp"></div>';
+    var m=line.match(/^(・)?\s*([^：]{1,22})：\s*(.+)$/);
+    if(m&&(m[1]||/^[AB]さん$/.test(m[2]))){
+      return '<div class="li"><span class="li-t">'+(m[1]||'')+escapeHtml(m[2])+'</span><span class="li-b">'+escapeHtml(m[3])+'</span></div>';}
+    if(line.charAt(0)==='・'||line.charAt(0)==='□')return '<div class="li li1">'+escapeHtml(line)+'</div>';
+    return '<div class="ln">'+escapeHtml(line)+'</div>';
+  }).join('');
+}
 function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 function slidesOf(g){
@@ -175,7 +193,7 @@ function renderList(S,si0){
       if(it.video){return tile({type:'video',src:it.video},gi,si++,g.name,si0);}
       return tile({type:'img',src:it.img},gi,si++,g.name,si0);
     }).join('');
-    return '<section class="group"><div class="g-head"><span class="g-tag">'+escapeHtml(g.name)+'</span><span class="g-count">'+slidesOf(g).length+' 枚</span></div><div class="items">'+items+'</div>'+(g.text?(g.text.length>300?'<p class="g-hint">▼ 説明文（スクロールして読めます）</p><div class="g-text scroll" tabindex="0">':'<p class="g-text">')+escapeHtml(g.text)+(g.text.length>300?'</div><button type="button" class="g-more">全文を画面いっぱいで読む ⤢</button>':'</p>'):'')+'</section>';
+    return '<section class="group"><div class="g-head"><span class="g-tag">'+escapeHtml(g.name)+'</span><span class="g-count">'+slidesOf(g).length+' 枚</span></div><div class="items">'+items+'</div>'+(g.text?(g.text.length>300?'<p class="g-hint">▼ 説明文（スクロールして読めます）</p><div class="g-text scroll" tabindex="0">':'<p class="g-text">')+(g.text.length>300?fmtText(g.text):escapeHtml(g.text))+(g.text.length>300?'</div><button type="button" class="g-more">全文を画面いっぱいで読む ⤢</button>':'</p>'):'')+'</section>';
   }).join('');
 }
 function render(i){renderTabs(sections[i]);renderList(sections[i],i);}
@@ -229,11 +247,11 @@ render(0);
 <script>
 (function(){const r=document.getElementById('reader');if(!r)return;
   const body=document.body;
-  function open(title,text){document.getElementById('readerTitle').textContent=title;document.getElementById('readerText').textContent=text;r.classList.add('open');body.style.overflow='hidden';document.getElementById('readerBody').scrollTop=0;}
+  function open(title,html){document.getElementById('readerTitle').textContent=title;document.getElementById('readerText').innerHTML=html;r.classList.add('open');body.style.overflow='hidden';document.getElementById('readerBody').scrollTop=0;}
   function close(){r.classList.remove('open');body.style.overflow='';}
   document.addEventListener('click',function(e){
     const b=e.target.closest&&e.target.closest('.g-more');
-    if(b){const g=b.closest('.group');const box=g&&g.querySelector('.g-text.scroll');if(box){const tag=g.querySelector('.g-tag');open((tag?tag.textContent:'')+'　説明',box.textContent);}return;}
+    if(b){const g=b.closest('.group');const box=g&&g.querySelector('.g-text.scroll');if(box){const tag=g.querySelector('.g-tag');open((tag?tag.textContent:'')+'　説明',box.innerHTML);}return;}
     if(e.target.closest&&e.target.closest('#readerClose'))close();
   });
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&r.classList.contains('open'))close();});
