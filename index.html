@@ -46,6 +46,16 @@ h1 .accent{color:var(--rose);}
 .banner img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 8px 24px rgba(28,46,56,.12);}
 .banner a{display:block;transition:opacity .2s;}
 .banner a:hover{opacity:.92;}
+.g-more{display:inline-flex;align-items:center;gap:6px;margin:12px 0 0;padding:10px 20px;font-family:inherit;font-size:14px;font-weight:500;color:var(--rose-deep);background:var(--card);border:1px solid var(--rose);border-radius:999px;cursor:pointer;}
+.g-more:hover{background:var(--rose);color:#fff;}
+.reader{position:fixed;inset:0;z-index:1000;background:var(--paper);display:none;flex-direction:column;}
+.reader.open{display:flex;}
+.reader-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line);}
+.reader-bar .rt{font-weight:700;color:var(--rose-deep);font-size:16px;}
+.reader-close{font-family:inherit;font-size:14px;padding:8px 18px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+.reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px 20px 80px;}
+.reader-body .rtext{max-width:760px;margin:0 auto;font-size:17px;line-height:2;white-space:pre-wrap;color:var(--ink);}
+@media (max-width:600px){.reader-body{padding:22px 18px 80px;}.reader-body .rtext{font-size:16px;}}
 .g-hint{font-size:12.5px;color:var(--ink-soft);margin:18px 0 8px;letter-spacing:.04em;}
 
 
@@ -165,7 +175,7 @@ function renderList(S,si0){
       if(it.video){return tile({type:'video',src:it.video},gi,si++,g.name,si0);}
       return tile({type:'img',src:it.img},gi,si++,g.name,si0);
     }).join('');
-    return '<section class="group"><div class="g-head"><span class="g-tag">'+escapeHtml(g.name)+'</span><span class="g-count">'+slidesOf(g).length+' 枚</span></div><div class="items">'+items+'</div>'+(g.text?(g.text.length>300?'<p class="g-hint">▼ 説明文（スクロールして読めます）</p><div class="g-text scroll" tabindex="0">':'<p class="g-text">')+escapeHtml(g.text)+(g.text.length>300?'</div>':'</p>'):'')+'</section>';
+    return '<section class="group"><div class="g-head"><span class="g-tag">'+escapeHtml(g.name)+'</span><span class="g-count">'+slidesOf(g).length+' 枚</span></div><div class="items">'+items+'</div>'+(g.text?(g.text.length>300?'<p class="g-hint">▼ 説明文（スクロールして読めます）</p><div class="g-text scroll" tabindex="0">':'<p class="g-text">')+escapeHtml(g.text)+(g.text.length>300?'</div><button type="button" class="g-more">全文を画面いっぱいで読む ⤢</button>':'</p>'):'')+'</section>';
   }).join('');
 }
 function render(i){renderTabs(sections[i]);renderList(sections[i],i);}
@@ -213,6 +223,20 @@ render(0);
   const fA=await pickFolder(aFirst), fB=(bFirst===undefined)?fA:await pickFolder(bFirst);
   buildGroups(sections[1],v=>MANAMI_A.has(v)?fA:fB);
   render(1);
+})();
+</script>
+<div class="reader" id="reader" role="dialog" aria-modal="true"><div class="reader-bar"><span class="rt" id="readerTitle"></span><button type="button" class="reader-close" id="readerClose">閉じる ✕</button></div><div class="reader-body" id="readerBody"><div class="rtext" id="readerText"></div></div></div>
+<script>
+(function(){const r=document.getElementById('reader');if(!r)return;
+  const body=document.body;
+  function open(title,text){document.getElementById('readerTitle').textContent=title;document.getElementById('readerText').textContent=text;r.classList.add('open');body.style.overflow='hidden';document.getElementById('readerBody').scrollTop=0;}
+  function close(){r.classList.remove('open');body.style.overflow='';}
+  document.addEventListener('click',function(e){
+    const b=e.target.closest&&e.target.closest('.g-more');
+    if(b){const g=b.closest('.group');const box=g&&g.querySelector('.g-text.scroll');if(box){const tag=g.querySelector('.g-tag');open((tag?tag.textContent:'')+'　説明',box.textContent);}return;}
+    if(e.target.closest&&e.target.closest('#readerClose'))close();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&r.classList.contains('open'))close();});
 })();
 </script>
 </body>
