@@ -42,6 +42,10 @@ h1 .accent{color:var(--rose);}
 .tile.broken .play{display:none;}
 .g-text{font-size:16px;line-height:2;color:var(--ink);margin:0;max-width:60ch;white-space:pre-wrap;}
 .g-text.scroll{max-width:none;max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 24px;font-size:15px;line-height:1.95;scrollbar-width:thin;scrollbar-color:var(--rose) var(--line);}
+.banner{margin:0 0 8px;}
+.banner img{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 8px 24px rgba(28,46,56,.12);}
+.banner a{display:block;transition:opacity .2s;}
+.banner a:hover{opacity:.92;}
 .g-hint{font-size:12.5px;color:var(--ink-soft);margin:18px 0 8px;letter-spacing:.04em;}
 
 
@@ -68,6 +72,7 @@ h1 .accent{color:var(--rose);}
     <p class="kicker">STORY DESIGN NOTE</p>
     <h1>みさこの<span class="accent">ストーリー集</span></h1>
   </header>
+  <div id="banner" class="banner" style="display:none"></div>
   <div class="controls">
     <div class="tabs" id="tabs"></div>
     <div class="search"><input type="text" id="searchInput" placeholder="キーワードで検索"></div>
@@ -136,6 +141,9 @@ function buildGroups(S,folderOf){
   S.groups=S.data?S.data.groups.map(g=>({name:g.name,text:g.text,items:(g.items||[]).map(v=>toItem(v,folderOf?folderOf(v):S.pre))})):[];
 }
 (function(){const el=document.getElementById('intro2');if(el){const t=(typeof STUDENT!=='undefined'&&STUDENT.intro)||'';el.textContent=t;el.style.display=t?'':'none';}})();
+(function(){const el=document.getElementById('banner');if(!el||typeof BANNER==='undefined'||!BANNER||!BANNER.img)return;
+  const img='<img src="'+escapeHtml(BANNER.img)+'" alt="'+escapeHtml(BANNER.alt||'')+'">';
+  el.innerHTML=BANNER.link?'<a href="'+escapeHtml(BANNER.link)+'" target="_blank" rel="noopener">'+img+'</a>':img;el.style.display='';})();
 buildGroups(sections[0]);
 sections[1].groups=[];
 if(!sections[1].data){document.getElementById('sec2').style.display='none';}
