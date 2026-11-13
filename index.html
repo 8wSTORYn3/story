@@ -61,6 +61,7 @@ h1 .accent{color:var(--rose);}
 .g-text.scroll .li,.rtext .li{margin:6px 0;}
 .li .li-t{display:block;font-weight:700;color:var(--rose-deep);}
 .li .li-b{display:block;padding-left:1em;}
+.ex{padding-left:1em;color:var(--ink-soft);margin:2px 0;}
 .li1{padding-left:1em;text-indent:-1em;margin:3px 0;}
 .rtext{white-space:normal !important;}
 .rtext .sp,.g-text.scroll .sp{height:.9em;}
@@ -135,6 +136,7 @@ function fmtText(t){
     var m=line.match(/^(・)?\s*([^：]{1,22})：\s*(.+)$/);
     if(m&&(m[1]||/^[AB]さん$/.test(m[2]))){
       return '<div class="li"><span class="li-t">'+(m[1]||'')+escapeHtml(m[2])+'</span><span class="li-b">'+escapeHtml(m[3])+'</span></div>';}
+    if(line.charAt(0)==='　')return '<div class="ex">'+escapeHtml(line.replace(/^　+/,''))+'</div>';
     if(line.charAt(0)==='・'||line.charAt(0)==='□')return '<div class="li li1">'+escapeHtml(line)+'</div>';
     return '<div class="ln">'+escapeHtml(line)+'</div>';
   }).join('');
