@@ -56,15 +56,28 @@ h1 .accent{color:var(--rose);}
 .reader-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px 20px 80px;}
 .reader-body .rtext{max-width:760px;margin:0 auto;font-size:17px;line-height:2;white-space:pre-wrap;color:var(--ink);}
 @media (max-width:600px){.reader-body{padding:22px 18px 80px;}.reader-body .rtext{font-size:16px;}}
-.fmt-box .sp{height:1em;}
 .g-text.scroll{white-space:normal;}
-.g-text.scroll .li,.rtext .li{margin:6px 0;}
 .li .li-t{display:block;font-weight:700;color:var(--rose-deep);}
 .li .li-b{display:block;padding-left:1em;}
-.ex{padding-left:1em;color:var(--ink-soft);margin:2px 0;}
-.li1{padding-left:1em;text-indent:-1em;margin:3px 0;}
-.rtext{white-space:normal !important;}
-.rtext .sp,.g-text.scroll .sp{height:.9em;}
+
+.fmt{white-space:normal !important;}
+.fmt>div{margin:1.2em 0 0;line-height:1.95;}
+.fmt>div:first-child{margin-top:0;}
+.fmt .hd{margin-top:2.4em;padding:.5em .9em;font-weight:700;font-size:1.06em;color:var(--rose-deep);background:rgba(43,122,158,.09);border-left:4px solid var(--rose);border-radius:6px;line-height:1.6;}
+.fmt .lab{margin-top:1.6em;font-weight:700;color:var(--rose-deep);}
+.fmt .lab + div{margin-top:.35em;}
+.fmt .lead{margin-bottom:0;}
+.fmt .lead + div{margin-top:.4em;}
+.fmt .q{padding:.55em 1em;background:rgba(43,122,158,.07);border-left:3px solid var(--rose);border-radius:4px;color:var(--ink);line-height:1.85;}
+.fmt .li,.fmt .li1,.fmt .num{margin-top:.5em;}
+.fmt .li{margin-top:.9em;}
+.fmt .li-t{display:block;font-weight:700;color:var(--rose-deep);line-height:1.7;}
+.fmt .li-b{display:block;padding-left:1em;line-height:1.85;}
+.fmt .li1{padding-left:1em;text-indent:-1em;line-height:1.8;}
+.fmt .num{padding-left:1.4em;text-indent:-1.4em;line-height:1.8;}
+.fmt .ex{margin-top:.25em;padding-left:1em;color:var(--ink-soft);line-height:1.8;}
+.fmt .lead + .li,.fmt .lead + .li1,.fmt .lead + .num{margin-top:.6em;}
+.fmt .note{font-size:.92em;color:var(--ink-soft);line-height:1.8;}
 .g-hint{font-size:12.5px;color:var(--ink-soft);margin:18px 0 8px;letter-spacing:.04em;}
 
 
@@ -131,15 +144,22 @@ function toItem(v,pre){
 const gradients=["linear-gradient(160deg,#BFE3EF,#7FB8CE)","linear-gradient(165deg,#E3F1F6,#B9D9E4)","linear-gradient(180deg,#16303F,#0B1A22)","linear-gradient(180deg,#123249,#0C4258)","linear-gradient(160deg,#D6E9F2,#A9CEDE)","linear-gradient(160deg,#CFE8E4,#9BC9C2)"];
 function gradientFor(t){t=t||'未分類';let h=0;for(let i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))%gradients.length;}return gradients[Math.abs(h)];}
 function fmtText(t){
-  return String(t).split('\n').map(function(line){
-    if(!line.trim())return '<div class="sp"></div>';
-    var m=line.match(/^(・)?\s*([^：]{1,22})：\s*(.+)$/);
-    if(m&&(m[1]||/^[AB]さん$/.test(m[2]))){
-      return '<div class="li"><span class="li-t">'+(m[1]||'')+escapeHtml(m[2])+'</span><span class="li-b">'+escapeHtml(m[3])+'</span></div>';}
-    if(line.charAt(0)==='　')return '<div class="ex">'+escapeHtml(line.replace(/^　+/,''))+'</div>';
-    if(line.charAt(0)==='・'||line.charAt(0)==='□')return '<div class="li li1">'+escapeHtml(line)+'</div>';
-    return '<div class="ln">'+escapeHtml(line)+'</div>';
-  }).join('');
+  var out=[];
+  String(t).split('\n').forEach(function(line){
+    if(!line.trim())return;
+    var x=escapeHtml,m;
+    if(line.charAt(0)==='　'){out.push('<div class="ex">'+x(line.replace(/^　+/,''))+'</div>');return;}
+    if(/^■ /.test(line)){out.push('<div class="hd">'+x(line.replace(/^■ /,''))+'</div>');return;}
+    if(/^【[^】]+】$/.test(line)||/^STEP\d/.test(line)){out.push('<div class="lab">'+x(line)+'</div>');return;}
+    m=line.match(/^(・)?\s*([^：]{1,22})：\s*(.+)$/);
+    if(m&&(m[1]||/^[AB]さん$/.test(m[2]))){out.push('<div class="li"><span class="li-t">'+(m[1]||'')+x(m[2])+'</span><span class="li-b">'+x(m[3])+'</span></div>');return;}
+    if(line.charAt(0)==='・'||line.charAt(0)==='□'){out.push('<div class="li1">'+x(line)+'</div>');return;}
+    if(/^\d+\. /.test(line)){out.push('<div class="num">'+x(line)+'</div>');return;}
+    if(/^「.*」$/.test(line)){out.push('<div class="q">'+x(line)+'</div>');return;}
+    if(/^※/.test(line)){out.push('<div class="note">'+x(line)+'</div>');return;}
+    out.push('<div class="ln'+(/、$/.test(line)?' lead':'')+'">'+x(line)+'</div>');
+  });
+  return out.join('');
 }
 function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
@@ -195,7 +215,7 @@ function renderList(S,si0){
       if(it.video){return tile({type:'video',src:it.video},gi,si++,g.name,si0);}
       return tile({type:'img',src:it.img},gi,si++,g.name,si0);
     }).join('');
-    return '<section class="group"><div class="g-head"><span class="g-tag">'+escapeHtml(g.name)+'</span><span class="g-count">'+slidesOf(g).length+' 枚</span></div><div class="items">'+items+'</div>'+(g.text?(g.text.length>300?'<p class="g-hint">▼ 説明文（スクロールして読めます）</p><div class="g-text scroll" tabindex="0">':'<p class="g-text">')+(g.text.length>300?fmtText(g.text):escapeHtml(g.text))+(g.text.length>300?'</div><button type="button" class="g-more">全文を画面いっぱいで読む ⤢</button>':'</p>'):'')+'</section>';
+    return '<section class="group"><div class="g-head"><span class="g-tag">'+escapeHtml(g.name)+'</span><span class="g-count">'+slidesOf(g).length+' 枚</span></div><div class="items">'+items+'</div>'+(g.text?(g.text.length>300?'<p class="g-hint">▼ 説明文（スクロールして読めます）</p><div class="g-text scroll fmt" tabindex="0">':'<p class="g-text">')+(g.text.length>300?fmtText(g.text):escapeHtml(g.text))+(g.text.length>300?'</div><button type="button" class="g-more">全文を画面いっぱいで読む ⤢</button>':'</p>'):'')+'</section>';
   }).join('');
 }
 function render(i){renderTabs(sections[i]);renderList(sections[i],i);}
@@ -245,7 +265,7 @@ render(0);
   render(1);
 })();
 </script>
-<div class="reader" id="reader" role="dialog" aria-modal="true"><div class="reader-bar"><span class="rt" id="readerTitle"></span><button type="button" class="reader-close" id="readerClose">閉じる ✕</button></div><div class="reader-body" id="readerBody"><div class="rtext" id="readerText"></div></div></div>
+<div class="reader" id="reader" role="dialog" aria-modal="true"><div class="reader-bar"><span class="rt" id="readerTitle"></span><button type="button" class="reader-close" id="readerClose">閉じる ✕</button></div><div class="reader-body" id="readerBody"><div class="rtext fmt" id="readerText"></div></div></div>
 <script>
 (function(){const r=document.getElementById('reader');if(!r)return;
   const body=document.body;
