@@ -79,6 +79,7 @@ h1 .accent{color:var(--rose);}
 .fmt .num{padding-left:1.4em;text-indent:-1.4em;line-height:1.8;}
 .fmt .ex{margin-top:.25em;padding-left:1em;color:var(--ink-soft);line-height:1.8;}
 .fmt .lead + .li,.fmt .lead + .li1,.fmt .lead + .num{margin-top:.6em;}
+.fmt .eg{padding-left:1em;color:var(--ink-soft);line-height:1.85;}
 .fmt .note{font-size:.92em;color:var(--ink-soft);line-height:1.8;}
 .g-hint{font-size:12.5px;color:var(--ink-soft);margin:18px 0 8px;letter-spacing:.04em;}
 
@@ -147,7 +148,8 @@ const gradients=["linear-gradient(160deg,#BFE3EF,#7FB8CE)","linear-gradient(165d
 function gradientFor(t){t=t||'未分類';let h=0;for(let i=0;i<t.length;i++){h=(h*31+t.charCodeAt(i))%gradients.length;}return gradients[Math.abs(h)];}
 function fmtText(t){
   var out=[];
-  String(t).split('\n').forEach(function(line){
+  var L=String(t).split('\n');
+  L.forEach(function(line,idx){
     if(!line.trim())return;
     var x=escapeHtml,m;
     if(line.charAt(0)==='　'){out.push('<div class="ex">'+x(line.replace(/^　+/,''))+'</div>');return;}
@@ -157,7 +159,10 @@ function fmtText(t){
     m=line.match(/^(・)?\s*([^：]{1,22})：\s*(.+)$/);
     if(m&&(m[1]||/^[AB]さん$/.test(m[2]))){out.push('<div class="li"><span class="li-t">'+(m[1]||'')+x(m[2])+'</span><span class="li-b">'+x(m[3])+'</span></div>');return;}
     if(line.charAt(0)==='・'||line.charAt(0)==='□'){out.push('<div class="li1">'+x(line)+'</div>');return;}
-    if(/^\d+\. /.test(line)){out.push('<div class="num">'+x(line)+'</div>');return;}
+    if(/^\d+\. /.test(line)){var nx=L[idx+1],nn=L[idx+2];
+      if(nx!==undefined&&!nx.trim()&&nn&&!/^\d+\. /.test(nn)&&!/^\d+\. /.test(L[idx-1]||'')){out.push('<div class="lab">'+x(line)+'</div>');return;}
+      out.push('<div class="num">'+x(line)+'</div>');return;}
+    if(/^例：/.test(line)){out.push('<div class="eg">'+x(line)+'</div>');return;}
     if(/^「.*」$/.test(line)){out.push('<div class="q">'+x(line)+'</div>');return;}
     if(/^※/.test(line)){out.push('<div class="note">'+x(line)+'</div>');return;}
     out.push('<div class="ln'+(/、$/.test(line)?' lead':'')+'">'+x(line)+'</div>');
