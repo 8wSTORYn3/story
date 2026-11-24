@@ -25,7 +25,7 @@
 const BANNER = {
   img: "media/banner.jpg",
   link: "",   // ← クリックで開きたいURLがあればここに入れる(空ならクリックできません)
-  alt: "1,000投稿以上して得た 伸びるリール台本30本",
+  alt: "もうネタに困らない ストーリーズ集",
 };
 
 const STORIES = {
